@@ -74,5 +74,7 @@ tempDirectory <- tempdir()
 print(tempDirectory)
 exportResults(cdUnitTest, outfileprefix = file.path(tempDirectory, "unitTestOutput"))
 
-GI <- exportToGI(cdUnitTest)
+if (requireNamespace("GenomicRanges", quietly = TRUE)) {
+  GI <- exportToGI(cdUnitTest)
+}
 }

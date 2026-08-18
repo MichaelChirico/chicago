@@ -16,7 +16,9 @@ bibliography: Chicago.bib
 %\VignettePackage{Chicago}
 -->
 ```{r style, echo = FALSE, results = 'asis'}
+options(bitmapType = "cairo")
 BiocStyle::markdown()
+knitr::opts_chunk$set(dev = "png", fig.ext = "png", dev.args = list(type = "cairo"))
 ```
 
 # Introduction
@@ -273,7 +275,7 @@ enrichmentResults
 
 We can perform further downstream analysis in R or Bioconductor, using functionality from the `r Biocpkg("GenomicInteractions")` package. First, we export the significant interactions into a GenomicInteractions object:
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=requireNamespace("GenomicInteractions", quietly=TRUE) && requireNamespace("GenomicRanges", quietly=TRUE)}
 library(GenomicInteractions)
 library(GenomicRanges)
 gi <- exportToGI(cd)
@@ -281,7 +283,7 @@ gi <- exportToGI(cd)
 
 From here, we can pass the CHiCAGO results through to other Bioconductor functionality. In the following example, we find out which other ends overlap with the H3K4me1 enhancer mark, using ENCODE data. We use `r Biocpkg("AnnotationHub")` to fetch a relevant enhancer mark track from the ENCODE project:
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=requireNamespace("AnnotationHub", quietly=TRUE)}
 library(AnnotationHub)
 ah <- AnnotationHub()
 hs <- query(ah, c("GRanges", "EncodeDCC", "Homo sapiens", "H3k4me1"))
@@ -290,19 +292,19 @@ enhancerTrack <- hs[["AH23254"]]
 
 Next, we use the ``anchorTwo()`` function to extract the other end locations from the GenomicInteractions object (``anchorOne()`` would give us the bait locations instead). Note that in this particular instance, the ``seqlevels()`` also need to be changed before performing the comparison, adding "chr" to make them match those of the annotation.
 
-```{r}
+```{r, eval=requireNamespace("GenomicInteractions", quietly=TRUE)}
 otherEnds <- anchorTwo(gi)
 otherEnds <- renameSeqlevels(otherEnds, c("chr20","chr21"))
 ```
 
 Finally, we look at which other ends overlap the enhancer marks:
 
-```{r}
+```{r, eval=requireNamespace("GenomicInteractions", quietly=TRUE) && requireNamespace("AnnotationHub", quietly=TRUE)}
 findOverlaps(otherEnds, enhancerTrack)
 ```
 
 Further note that the annotation's genome version should match that of the promoter capture data, namely hg19:
-```{r}
+```{r, eval=requireNamespace("AnnotationHub", quietly=TRUE)}
 hs["AH23254"]$genome
 ```
 
